@@ -3,24 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Griglia Colloquio Orale — Maturità 2026</title>
+<title>Maturità 2026 — Griglia e Riepilogo</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #ffffff;
-    --bg2: #f5f4f0;
-    --bg3: #eeece7;
-    --border: #d8d6ce;
-    --border2: #c2c0b8;
-    --text: #1a1917;
-    --text2: #5a5854;
-    --text3: #8a8884;
-    --green-mid: #0F6E56;
-    --green-text: #085041;
-    --green-light: #E1F5EE;
-    --radius: 10px;
-    --radius-sm: 6px;
+    --bg: #ffffff; --bg2: #f5f4f0; --bg3: #eeece7;
+    --border: #d8d6ce; --border2: #c2c0b8;
+    --text: #1a1917; --text2: #5a5854; --text3: #8a8884;
+    --green-mid: #0F6E56; --green-text: #085041; --green-light: #E1F5EE;
+    --gold: #B8860B; --gold-light: #FBF3DC;
+    --radius: 10px; --radius-sm: 6px;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -29,29 +22,62 @@
       --border: #3a3834; --border2: #4a4844;
       --text: #f0ede8; --text2: #a0998f; --text3: #6a6560;
       --green-mid: #1D9E75; --green-text: #9FE1CB; --green-light: #04342C;
+      --gold: #D4AF37; --gold-light: #3A2F12;
     }
   }
 
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg2); color: var(--text); min-height: 100vh; padding: 24px 16px 48px; }
-  .page { max-width: 780px; margin: 0 auto; }
+  .page { max-width: 1100px; margin: 0 auto; }
+
+  /* NAV */
+  .top-nav { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .nav-btn { font-size: 13px; font-weight: 500; font-family: inherit; padding: 8px 16px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: var(--bg2); color: var(--text2); cursor: pointer; transition: all 0.15s; }
+  .nav-btn:hover { background: var(--bg3); }
+  .nav-btn.active { background: var(--green-mid); color: #E1F5EE; border-color: var(--green-mid); font-weight: 600; }
+
+  .section { display: none; }
+  .section.visible { display: block; }
 
   .app-header { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .app-header h1 { font-size: 16px; font-weight: 600; color: var(--text); }
   .app-header p { font-size: 12px; color: var(--text3); margin-top: 3px; }
   .header-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
-  .candidato-section { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .candidato-section label { font-size: 13px; color: var(--text2); white-space: nowrap; }
-  .candidato-section input { flex: 1; min-width: 200px; font-size: 14px; font-weight: 500; padding: 7px 12px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: var(--bg2); color: var(--text); }
-  .candidato-section input:focus { outline: 2px solid var(--green-mid); outline-offset: 1px; }
-
-  .btn { font-size: 12px; font-family: inherit; padding: 7px 14px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+  .btn { font-size: 12px; font-family: inherit; padding: 7px 14px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); cursor: pointer; white-space: nowrap; transition: background 0.15s; text-decoration: none; display: inline-flex; align-items: center; }
   .btn:hover { background: var(--bg2); }
   .btn-green { background: var(--green-mid); color: #E1F5EE; border-color: var(--green-mid); font-weight: 600; }
   .btn-green:hover { opacity: 0.88; }
   .btn-danger { color: #A32D2D; border-color: #F0959580; }
   .btn-danger:hover { background: #FCEBEB; }
-  .btn-sm { padding: 4px 10px; font-size: 11px; }
+  .btn-sm { padding: 4px 8px; font-size: 11px; }
+
+  /* ===== SEZIONE ELENCO ===== */
+  .elenco-section { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px; }
+  .elenco-section label { font-size: 13px; color: var(--text2); display: block; margin-bottom: 8px; }
+  .elenco-section textarea {
+    width: 100%; min-height: 160px; font-size: 13px; font-family: inherit;
+    padding: 10px 12px; border: 0.5px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--bg2); color: var(--text); resize: vertical;
+  }
+  .elenco-section textarea:focus { outline: 2px solid var(--green-mid); outline-offset: 1px; }
+  .elenco-hint { font-size: 11px; color: var(--text3); margin-top: 6px; }
+  .elenco-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+  .elenco-lista { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
+  .elenco-lista-title { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 10px; }
+  .elenco-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .elenco-chip { font-size: 12px; padding: 5px 10px; border-radius: 99px; background: var(--bg2); border: 0.5px solid var(--border); color: var(--text); }
+  .elenco-empty { font-size: 13px; color: var(--text3); }
+
+  /* ===== SEZIONE COLLOQUIO ===== */
+  .candidato-section { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .candidato-section label { font-size: 13px; color: var(--text2); white-space: nowrap; }
+  .candidato-section select {
+    flex: 1; min-width: 200px; font-size: 14px; font-weight: 500; padding: 7px 12px;
+    border: 0.5px solid var(--border2); border-radius: var(--radius-sm);
+    background: var(--bg2); color: var(--text); font-family: inherit;
+  }
+  .candidato-section select:focus { outline: 2px solid var(--green-mid); outline-offset: 1px; }
 
   .indicatori { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
   .indicatore-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
@@ -110,66 +136,236 @@
   .reg-pts { font-size: 13px; font-weight: 700; color: var(--green-mid); min-width: 40px; text-align: right; }
   .reg-pts.empty { color: var(--text3); font-weight: 400; }
 
+  /* ===== SEZIONE RIEPILOGO ===== */
+  .table-section { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; overflow-x: auto; }
+  .table-title { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 12px; padding: 0 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 760px; }
+  thead th {
+    background: var(--bg2); color: var(--text2); font-weight: 600; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.02em; padding: 8px 8px; text-align: center;
+    border: 0.5px solid var(--border); white-space: nowrap;
+  }
+  thead th.col-nome { text-align: left; }
+  tbody td { padding: 6px 8px; border: 0.5px solid var(--border); text-align: center; vertical-align: middle; }
+  tbody td.col-nome { text-align: left; font-weight: 500; }
+  tbody tr:hover { background: var(--bg2); }
+
+  input.cell-input {
+    width: 56px; font-size: 13px; font-weight: 500; text-align: center;
+    padding: 5px 4px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm);
+    background: var(--bg2); color: var(--text); font-family: inherit;
+  }
+  input.cell-input:focus { outline: 2px solid var(--green-mid); outline-offset: 1px; }
+
+  .col-orale-val { font-weight: 700; color: var(--green-mid); }
+  .col-orale-val.empty { color: var(--text3); font-weight: 400; font-size: 11px; }
+  .col-totale-val { font-weight: 700; font-size: 14px; }
+  .col-finale-val { font-weight: 800; font-size: 16px; color: var(--green-mid); }
+  .col-finale-val.cento { color: var(--gold); }
+
+  .lode-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--gold); }
+  .lode-row-cento { background: var(--gold-light) !important; }
+
+  .empty-row { text-align: center; padding: 24px; color: var(--text3); font-size: 13px; }
+
   @media print {
     body { background: white; padding: 0; }
     .no-print { display: none !important; }
     .page { max-width: 100%; }
+    input.cell-input { border: none; background: transparent; }
   }
 </style>
 </head>
 <body>
 <div class="page">
 
-  <div class="app-header">
-    <div>
-      <h1>Griglia di valutazione — colloquio orale</h1>
-      <p>Allegato A &mdash; Esame di Stato 2026 &mdash; Max 20 punti</p>
+  <div class="top-nav no-print">
+    <button class="nav-btn" id="navElenco" onclick="mostraSezione('elenco')">📋 Elenco candidati</button>
+    <button class="nav-btn" id="navColloquio" onclick="mostraSezione('colloquio')">🎓 Colloquio orale</button>
+    <button class="nav-btn" id="navFinale" onclick="mostraSezione('finale')">📊 Riepilogo finale</button>
+  </div>
+
+  <!-- ============ SEZIONE ELENCO ============ -->
+  <div class="section" id="sectionElenco">
+    <div class="app-header">
+      <div>
+        <h1>Elenco candidati</h1>
+        <p>Inserisci una volta tutti i nomi: saranno disponibili nel colloquio e nel riepilogo finale</p>
+      </div>
     </div>
-    <div class="header-actions no-print">
-      <button class="btn" onclick="esportaJSON()">⬇ Backup dati</button>
-      <label class="btn" style="cursor:pointer;">⬆ Ripristina<input type="file" accept=".json" onchange="importaJSON(event)" style="display:none"></label>
-      <button class="btn btn-green" onclick="stampaRiepilogo()">🖨 Stampa riepilogo</button>
+
+    <div class="elenco-section">
+      <label for="elencoTextarea">Incolla o scrivi un nome per riga:</label>
+      <textarea id="elencoTextarea" placeholder="Agus Esmeralda&#10;Dessì Martina&#10;Ena Valentina&#10;..."></textarea>
+      <div class="elenco-hint">Un candidato per riga. Premi "Salva elenco" per aggiornare le liste.</div>
+      <div class="elenco-actions">
+        <button class="btn btn-green" onclick="salvaElenco()">Salva elenco</button>
+        <button class="btn btn-danger" onclick="svuotaElenco()">Svuota elenco</button>
+      </div>
+    </div>
+
+    <div class="elenco-lista">
+      <div class="elenco-lista-title">Candidati inseriti (<span id="elencoCount">0</span>)</div>
+      <div class="elenco-chips" id="elencoChips"><span class="elenco-empty">Nessun candidato ancora inserito.</span></div>
     </div>
   </div>
 
-  <div class="candidato-section no-print">
-    <label for="nomeInput">Candidato:</label>
-    <input type="text" id="nomeInput" placeholder="Nome e cognome" />
-    <button class="btn btn-green" onclick="salvaCandidato()">Salva</button>
-    <button class="btn" onclick="nuovoCandidato()">+ Nuovo</button>
+  <!-- ============ SEZIONE COLLOQUIO ============ -->
+  <div class="section" id="sectionColloquio">
+    <div class="app-header">
+      <div>
+        <h1>Griglia di valutazione — colloquio orale</h1>
+        <p>Allegato A &mdash; Esame di Stato 2026 &mdash; Max 20 punti</p>
+      </div>
+      <div class="header-actions no-print">
+        <button class="btn" onclick="esportaJSON()">⬇ Backup dati</button>
+        <label class="btn" style="cursor:pointer;">⬆ Ripristina<input type="file" accept=".json" onchange="importaJSON(event)" style="display:none"></label>
+        <button class="btn btn-green" onclick="stampaRiepilogo()">🖨 Stampa riepilogo</button>
+      </div>
+    </div>
+
+    <div class="candidato-section no-print">
+      <label for="nomeSelect">Candidato:</label>
+      <select id="nomeSelect" onchange="selezionaCandidatoDaTendina()">
+        <option value="">— Seleziona dall'elenco —</option>
+      </select>
+      <button class="btn btn-green" onclick="salvaCandidato()">Salva</button>
+      <button class="btn" onclick="nuovoCandidato()">+ Nuovo</button>
+    </div>
+
+    <div class="indicatori" id="indicatoriContainer"></div>
+
+    <div class="punteggio-section">
+      <div>
+        <div class="pts-proposto-label">Punteggio proposto</div>
+        <div class="pts-proposto-value" id="punteggioCalc">—<span>/ 20</span></div>
+      </div>
+      <div class="pts-assegnato-row">
+        <label for="punteggioFinal">Punteggio assegnato dalla commissione:</label>
+        <input type="number" id="punteggioFinal" min="1" max="20" step="0.5" placeholder="—" />
+      </div>
+    </div>
+
+    <div class="nota-section">
+      <label for="notaInput">Note:</label>
+      <textarea id="notaInput" rows="2" placeholder="Osservazioni sulla prova del candidato..."></textarea>
+    </div>
+
+    <div class="registro-section no-print">
+      <div class="registro-header">
+        <span class="registro-title">Candidati valutati</span>
+        <span class="registro-count" id="registroCount"></span>
+      </div>
+      <div id="registroList"><div class="registro-empty">Nessun candidato ancora valutato.</div></div>
+    </div>
   </div>
 
-  <div class="indicatori" id="indicatoriContainer"></div>
-
-  <div class="punteggio-section">
-    <div>
-      <div class="pts-proposto-label">Punteggio proposto</div>
-      <div class="pts-proposto-value" id="punteggioCalc">—<span>/ 20</span></div>
+  <!-- ============ SEZIONE FINALE ============ -->
+  <div class="section" id="sectionFinale">
+    <div class="app-header">
+      <div>
+        <h1>Riepilogo finale — Esame di Stato 2026</h1>
+        <p>Crediti + Prove scritte + Colloquio orale = Punteggio totale (+ Bonus e Lode)</p>
+      </div>
+      <div class="header-actions no-print">
+        <button class="btn btn-green" onclick="stampaRiepilogoFinale()">🖨 Stampa riepilogo</button>
+        <button class="btn" onclick="window.print()">🖨 Stampa tabella</button>
+      </div>
     </div>
-    <div class="pts-assegnato-row">
-      <label for="punteggioFinal">Punteggio assegnato dalla commissione:</label>
-      <input type="number" id="punteggioFinal" min="1" max="20" step="0.5" placeholder="—" />
-    </div>
-  </div>
 
-  <div class="nota-section">
-    <label for="notaInput">Note:</label>
-    <textarea id="notaInput" rows="2" placeholder="Osservazioni sulla prova del candidato..."></textarea>
-  </div>
-
-  <div class="registro-section no-print">
-    <div class="registro-header">
-      <span class="registro-title">Candidati salvati</span>
-      <span class="registro-count" id="registroCount"></span>
+    <div class="table-section">
+      <div class="table-title">Quadro riepilogativo punteggi</div>
+      <table>
+        <thead>
+          <tr>
+            <th class="col-nome">Candidato</th>
+            <th>Crediti</th>
+            <th>1ª Prova</th>
+            <th>2ª Prova</th>
+            <th>Orale</th>
+            <th>Totale</th>
+            <th>Bonus</th>
+            <th>Lode</th>
+            <th>Finale</th>
+          </tr>
+        </thead>
+        <tbody id="tabellaBody"></tbody>
+      </table>
+      <div id="emptyStateFinale" class="empty-row" style="display:none;">Nessun candidato nell'elenco. Vai alla sezione "Elenco candidati" per inserirli.</div>
     </div>
-    <div id="registroList"><div class="registro-empty">Nessun candidato ancora salvato.</div></div>
   </div>
 
 </div>
 
 <script>
-const STORAGE_KEY = 'griglia_maturita_2026';
+/* ============================================================
+   STORAGE KEYS
+   ============================================================ */
+const STORAGE_ELENCO = 'maturita_2026_elenco';
+const STORAGE_ORALE   = 'griglia_maturita_2026';
+const STORAGE_FINALE  = 'griglia_finale_2026';
 
+/* ============================================================
+   NAVIGAZIONE TRA SEZIONI
+   ============================================================ */
+function mostraSezione(nome) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('section' + nome.charAt(0).toUpperCase() + nome.slice(1)).classList.add('visible');
+  document.getElementById('nav' + nome.charAt(0).toUpperCase() + nome.slice(1)).classList.add('active');
+  localStorage.setItem('maturita_2026_ultima_sezione', nome);
+
+  if (nome === 'colloquio') popolaSelectCandidati();
+  if (nome === 'finale') renderTabellaFinale();
+}
+
+/* ============================================================
+   SEZIONE ELENCO
+   ============================================================ */
+function caricaElenco() {
+  try {
+    const r = localStorage.getItem(STORAGE_ELENCO);
+    return r ? JSON.parse(r) : [];
+  } catch(e) { return []; }
+}
+function salvaElencoStorage(lista) {
+  localStorage.setItem(STORAGE_ELENCO, JSON.stringify(lista));
+}
+
+function salvaElenco() {
+  const testo = document.getElementById('elencoTextarea').value;
+  const nomi = testo.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+  const unici = [...new Set(nomi)];
+  salvaElencoStorage(unici);
+  renderElencoChips();
+  popolaSelectCandidati();
+  renderTabellaFinale();
+}
+
+function svuotaElenco() {
+  if (!confirm('Svuotare l\'intero elenco candidati? Le valutazioni già salvate nel colloquio non vengono toccate.')) return;
+  salvaElencoStorage([]);
+  document.getElementById('elencoTextarea').value = '';
+  renderElencoChips();
+  popolaSelectCandidati();
+  renderTabellaFinale();
+}
+
+function renderElencoChips() {
+  const lista = caricaElenco();
+  const container = document.getElementById('elencoChips');
+  document.getElementById('elencoCount').textContent = lista.length;
+  if (!lista.length) {
+    container.innerHTML = '<span class="elenco-empty">Nessun candidato ancora inserito.</span>';
+    return;
+  }
+  container.innerHTML = lista.map(n => `<span class="elenco-chip">${n}</span>`).join('');
+}
+
+/* ============================================================
+   SEZIONE COLLOQUIO
+   ============================================================ */
 const INDICATORI = [
   {
     id: 'contenuti', label: 'Indicatore 1',
@@ -217,14 +413,14 @@ const INDICATORI = [
   }
 ];
 
-let selezioni = {};   // { indId: { livIndex, valore } }
+let selezioni = {};
 let candidati = [];
 let candidatoAttivo = null;
 
 function caricaDaStorage() {
-  try { const r = localStorage.getItem(STORAGE_KEY); if (r) candidati = JSON.parse(r); } catch(e) { candidati = []; }
+  try { const r = localStorage.getItem(STORAGE_ORALE); if (r) candidati = JSON.parse(r); } catch(e) { candidati = []; }
 }
-function salvaSuStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(candidati)); }
+function salvaSuStorage() { localStorage.setItem(STORAGE_ORALE, JSON.stringify(candidati)); }
 
 function esportaJSON() {
   const blob = new Blob([JSON.stringify(candidati, null, 2)], { type: 'application/json' });
@@ -239,6 +435,32 @@ function importaJSON(e) {
     catch(err) { alert('Errore nella lettura del file.'); }
   };
   reader.readAsText(file);
+}
+
+function popolaSelectCandidati() {
+  const lista = caricaElenco();
+  const select = document.getElementById('nomeSelect');
+  const valoreAttuale = select.value;
+  select.innerHTML = '<option value="">— Seleziona dall\'elenco —</option>' +
+    lista.map(n => `<option value="${n}">${n}</option>`).join('');
+  if (lista.includes(valoreAttuale)) select.value = valoreAttuale;
+}
+
+function selezionaCandidatoDaTendina() {
+  const nome = document.getElementById('nomeSelect').value;
+  if (!nome) { nuovoCandidato(false); return; }
+
+  const idx = candidati.findIndex(c => c.nome.trim().toLowerCase() === nome.trim().toLowerCase());
+  if (idx >= 0) {
+    caricaCandidato(idx);
+    document.getElementById('nomeSelect').value = nome;
+  } else {
+    selezioni = {}; candidatoAttivo = null;
+    document.getElementById('punteggioFinal').value = '';
+    document.getElementById('notaInput').value = '';
+    aggiornaSelezioni();
+    renderRegistro();
+  }
 }
 
 function renderIndicatori() {
@@ -307,7 +529,6 @@ function aggiornaSelezioni() {
       txtEl.textContent = l.desc;
       box.classList.add('visible');
 
-      // Configure slider
       const slider = document.getElementById('slider_' + ind.id);
       if (l.min === l.max) {
         sliderRow.style.display = 'none';
@@ -342,31 +563,33 @@ function calcolaPunteggio() {
   return tot;
 }
 
-function nuovoCandidato() {
+function nuovoCandidato(resetSelect = true) {
   selezioni = {}; candidatoAttivo = null;
-  document.getElementById('nomeInput').value = '';
+  if (resetSelect) document.getElementById('nomeSelect').value = '';
   document.getElementById('punteggioFinal').value = '';
   document.getElementById('notaInput').value = '';
   aggiornaSelezioni(); renderRegistro();
-  document.getElementById('nomeInput').focus();
 }
 
 function salvaCandidato() {
-  const nome = document.getElementById('nomeInput').value.trim();
-  if (!nome) { document.getElementById('nomeInput').focus(); return; }
+  const nome = document.getElementById('nomeSelect').value.trim();
+  if (!nome) { alert('Seleziona un candidato dall\'elenco prima di salvare.'); return; }
   const ptsProposto = calcolaPunteggio();
   const ptsRaw = document.getElementById('punteggioFinal').value;
   const nota = document.getElementById('notaInput').value.trim();
   const dati = { nome, selezioni: JSON.parse(JSON.stringify(selezioni)), ptsProposto, ptsAssegnato: ptsRaw ? parseFloat(ptsRaw) : null, nota, ts: Date.now() };
   if (candidatoAttivo !== null) { candidati[candidatoAttivo] = dati; }
-  else { candidati.push(dati); candidatoAttivo = candidati.length - 1; }
+  else {
+    const existingIdx = candidati.findIndex(c => c.nome.trim().toLowerCase() === nome.toLowerCase());
+    if (existingIdx >= 0) { candidati[existingIdx] = dati; candidatoAttivo = existingIdx; }
+    else { candidati.push(dati); candidatoAttivo = candidati.length - 1; }
+  }
   salvaSuStorage(); renderRegistro();
 }
 
 function caricaCandidato(idx) {
   const c = candidati[idx];
   candidatoAttivo = idx;
-  document.getElementById('nomeInput').value = c.nome;
   selezioni = JSON.parse(JSON.stringify(c.selezioni));
   document.getElementById('punteggioFinal').value = c.ptsAssegnato ?? '';
   document.getElementById('notaInput').value = c.nota ?? '';
@@ -375,7 +598,7 @@ function caricaCandidato(idx) {
 
 function eliminaCandidato(idx, e) {
   e.stopPropagation();
-  if (!confirm('Eliminare ' + candidati[idx].nome + '?')) return;
+  if (!confirm('Eliminare la valutazione di ' + candidati[idx].nome + '?')) return;
   candidati.splice(idx, 1); salvaSuStorage();
   if (candidatoAttivo === idx) nuovoCandidato();
   else { if (candidatoAttivo > idx) candidatoAttivo--; renderRegistro(); }
@@ -384,8 +607,8 @@ function eliminaCandidato(idx, e) {
 function renderRegistro() {
   const el = document.getElementById('registroList');
   const cnt = document.getElementById('registroCount');
-  cnt.textContent = candidati.length ? candidati.length + ' candidat' + (candidati.length === 1 ? 'o' : 'i') : '';
-  if (!candidati.length) { el.innerHTML = '<div class="registro-empty">Nessun candidato ancora salvato.</div>'; return; }
+  cnt.textContent = candidati.length ? candidati.length + ' valutat' + (candidati.length === 1 ? 'o' : 'i') : '';
+  if (!candidati.length) { el.innerHTML = '<div class="registro-empty">Nessun candidato ancora valutato.</div>'; return; }
   el.innerHTML = '';
   const list = document.createElement('div'); list.className = 'registro-list';
   candidati.forEach((c, i) => {
@@ -393,7 +616,7 @@ function renderRegistro() {
     const completo = Object.keys(c.selezioni).length === 4;
     const item = document.createElement('div');
     item.className = 'reg-item' + (candidatoAttivo === i ? ' active' : '');
-    item.onclick = () => caricaCandidato(i);
+    item.onclick = () => { caricaCandidato(i); document.getElementById('nomeSelect').value = c.nome; };
     item.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
         <span class="badge ${completo ? 'badge-ok' : 'badge-bozza'}">${completo ? 'completo' : 'bozza'}</span>
@@ -409,7 +632,7 @@ function renderRegistro() {
 }
 
 function stampaRiepilogo() {
-  if (!candidati.length) { alert('Nessun candidato salvato da stampare.'); return; }
+  if (!candidati.length) { alert('Nessun candidato valutato da stampare.'); return; }
   const nomi_ind = [
     'Acquisizione dei contenuti e dei metodi',
     'Capacità di raccordare le conoscenze; padronanza lessicale',
@@ -442,7 +665,7 @@ function stampaRiepilogo() {
           <th style="text-align:center;padding:7px 8px;border:1px solid #ddd;width:10%">Punti</th>
           <th style="text-align:left;padding:7px 8px;border:1px solid #ddd">Descrittore</th>
         </tr></thead>
-        <tbody>${dettagli.replace(/<tr>/g,'<tr>').replace(/<td>/g,'<td style="padding:6px 8px;border:1px solid #ddd;vertical-align:top">').replace(/<td style="text-align:center">/g,'<td style="padding:6px 8px;border:1px solid #ddd;text-align:center;vertical-align:top">').replace(/<td style="text-align:center;font-weight:700;color:#0F6E56">/g,'<td style="padding:6px 8px;border:1px solid #ddd;text-align:center;font-weight:700;color:#0F6E56;vertical-align:top">').replace(/<td style="font-size:11px;color:#555">/g,'<td style="padding:6px 8px;border:1px solid #ddd;font-size:11px;color:#555;vertical-align:top">').replace(/<td style="text-align:center;font-weight:700;color:#0F6E56">/g,'<td style="padding:6px 8px;border:1px solid #ddd;text-align:center;font-weight:700;color:#0F6E56;vertical-align:top">').replace(/<td style="font-size:11px;color:#555">/g,'<td style="padding:6px 8px;border:1px solid #ddd;font-size:11px;color:#555;vertical-align:top">')}</tbody>
+        <tbody>${dettagli.replace(/<td>/g,'<td style="padding:6px 8px;border:1px solid #ddd;vertical-align:top">').replace(/<td style="text-align:center">/g,'<td style="padding:6px 8px;border:1px solid #ddd;text-align:center;vertical-align:top">').replace(/<td style="text-align:center;font-weight:700;color:#0F6E56">/g,'<td style="padding:6px 8px;border:1px solid #ddd;text-align:center;font-weight:700;color:#0F6E56;vertical-align:top">').replace(/<td style="font-size:11px;color:#555">/g,'<td style="padding:6px 8px;border:1px solid #ddd;font-size:11px;color:#555;vertical-align:top">')}</tbody>
       </table>
       ${c.nota ? `<div style="font-size:12px;color:#444;border-top:1px solid #eee;padding-top:8px"><strong>Note:</strong> ${c.nota}</div>` : ''}
     </div>`;
@@ -462,9 +685,159 @@ function stampaRiepilogo() {
   setTimeout(() => w.print(), 500);
 }
 
+/* ============================================================
+   SEZIONE FINALE
+   ============================================================ */
+function caricaFinaleDati() {
+  try { const r = localStorage.getItem(STORAGE_FINALE); return r ? JSON.parse(r) : {}; }
+  catch(e) { return {}; }
+}
+function salvaFinaleDati(dati) { localStorage.setItem(STORAGE_FINALE, JSON.stringify(dati)); }
+
+function getVotoOrale(nome) {
+  const c = candidati.find(x => x.nome.trim().toLowerCase() === nome.trim().toLowerCase());
+  if (!c) return null;
+  return c.ptsAssegnato ?? c.ptsProposto ?? null;
+}
+
+function calcolaTotaleFinale(extra) {
+  const crediti = parseFloat(extra.crediti);
+  const p1 = parseFloat(extra.prova1);
+  const p2 = parseFloat(extra.prova2);
+  return { crediti, p1, p2 };
+}
+
+function aggiornaCampoFinale(nome, campo, valore) {
+  const dati = caricaFinaleDati();
+  if (!dati[nome]) dati[nome] = { crediti: '', prova1: '', prova2: '', bonus: '', lode: false };
+  dati[nome][campo] = valore;
+  salvaFinaleDati(dati);
+  renderTabellaFinale();
+}
+
+function renderTabellaFinale() {
+  caricaDaStorage(); // refresh oral grades
+  const lista = caricaElenco();
+  const dati = caricaFinaleDati();
+  const body = document.getElementById('tabellaBody');
+  const empty = document.getElementById('emptyStateFinale');
+
+  if (!lista.length) {
+    body.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  body.innerHTML = lista.map(nome => {
+    const extra = dati[nome] || { crediti: '', prova1: '', prova2: '', bonus: '', lode: false };
+    const orale = getVotoOrale(nome);
+    const crediti = parseFloat(extra.crediti);
+    const p1 = parseFloat(extra.prova1);
+    const p2 = parseFloat(extra.prova2);
+    const totale = (!isNaN(crediti) && !isNaN(p1) && !isNaN(p2) && orale !== null) ? (crediti + p1 + p2 + orale) : null;
+    const bonus = parseFloat(extra.bonus) || 0;
+    let finale = totale !== null ? totale + bonus : null;
+    if (finale !== null && finale > 100) finale = 100;
+    const isCento = finale === 100;
+
+    return `<tr class="${isCento ? 'lode-row-cento' : ''}">
+      <td class="col-nome">${nome}</td>
+      <td><input class="cell-input" type="number" min="0" max="40" value="${extra.crediti}" placeholder="—" oninput="aggiornaCampoFinale('${nome.replace(/'/g, "\\'")}', 'crediti', this.value)"></td>
+      <td><input class="cell-input" type="number" min="0" max="20" value="${extra.prova1}" placeholder="—" oninput="aggiornaCampoFinale('${nome.replace(/'/g, "\\'")}', 'prova1', this.value)"></td>
+      <td><input class="cell-input" type="number" min="0" max="20" value="${extra.prova2}" placeholder="—" oninput="aggiornaCampoFinale('${nome.replace(/'/g, "\\'")}', 'prova2', this.value)"></td>
+      <td><span class="col-orale-val ${orale === null ? 'empty' : ''}">${orale !== null ? orale : 'non valutato'}</span></td>
+      <td><span class="col-totale-val">${totale !== null ? totale : '—'}</span></td>
+      <td><input class="cell-input" type="number" min="0" max="5" step="0.5" value="${extra.bonus}" placeholder="0" oninput="aggiornaCampoFinale('${nome.replace(/'/g, "\\'")}', 'bonus', this.value)"></td>
+      <td><input type="checkbox" class="lode-checkbox" ${extra.lode ? 'checked' : ''} onchange="aggiornaCampoFinale('${nome.replace(/'/g, "\\'")}', 'lode', this.checked)"></td>
+      <td><span class="col-finale-val ${isCento ? 'cento' : ''}">${finale !== null ? finale + (extra.lode && isCento ? ' L' : '') : '—'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function stampaRiepilogoFinale() {
+  caricaDaStorage();
+  const lista = caricaElenco();
+  if (!lista.length) { alert('Nessun candidato nell\'elenco da stampare.'); return; }
+  const dati = caricaFinaleDati();
+
+  const righe = lista.map((nome, i) => {
+    const extra = dati[nome] || { crediti: '', prova1: '', prova2: '', bonus: '', lode: false };
+    const orale = getVotoOrale(nome);
+    const crediti = parseFloat(extra.crediti);
+    const p1 = parseFloat(extra.prova1);
+    const p2 = parseFloat(extra.prova2);
+    const totale = (!isNaN(crediti) && !isNaN(p1) && !isNaN(p2) && orale !== null) ? (crediti + p1 + p2 + orale) : null;
+    const bonus = parseFloat(extra.bonus) || 0;
+    let finale = totale !== null ? totale + bonus : null;
+    if (finale !== null && finale > 100) finale = 100;
+    const isCento = finale === 100;
+    const lodeTxt = (extra.lode && isCento) ? ' <strong>con Lode</strong>' : '';
+
+    return `<tr style="${isCento ? 'background:#FBF3DC' : (i % 2 === 0 ? 'background:#fafafa' : '')}">
+      <td style="padding:8px 10px;border:1px solid #ddd;text-align:left;font-weight:600">${i+1}. ${nome}</td>
+      <td style="padding:8px 10px;border:1px solid #ddd;text-align:center">${extra.crediti || '—'}</td>
+      <td style="padding:8px 10px;border:1px solid #ddd;text-align:center">${extra.prova1 || '—'}</td>
+      <td style="padding:8px 10px;border:1px solid #ddd;text-align:center">${extra.prova2 || '—'}</td>
+      <td style="padding:8px 10px;border:1px solid #ddd;text-align:center;font-weight:600;color:#0F6E56">${orale !== null ? orale : '—'}</td>
+      <td style="padding:8px 10px;border:1px solid #ddd;text-align:center;font-weight:600">${totale !== null ? totale : '—'}</td>
+      <td style="padding:8px 10px;border:1px solid #ddd;text-align:center">${bonus || '—'}</td>
+      <td style="padding:8px 10px;border:1px solid #ddd;text-align:center;font-size:18px;font-weight:800;color:${isCento ? '#B8860B' : '#0F6E56'}">${finale !== null ? finale : '—'}${lodeTxt}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8">
+    <title>Riepilogo finale — Maturità 2026</title>
+    <style>
+      body { font-family: -apple-system, sans-serif; padding: 24px; max-width: 980px; margin: 0 auto; color: #1a1917; }
+      h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+      p { font-size: 12px; color: #888; margin-bottom: 24px; }
+      table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+      thead th { background: #f5f4f0; padding: 9px 10px; border: 1px solid #ddd; text-align: center; font-size: 11px; text-transform: uppercase; letter-spacing: 0.02em; color: #5a5854; }
+      thead th.left { text-align: left; }
+      @media print { body { padding: 0; } }
+    </style>
+  </head><body>
+    <h1>Riepilogo finale — Esame di Stato 2026</h1>
+    <p>Crediti + Prove scritte + Colloquio orale = Totale (+ Bonus/Lode) — ${lista.length} candidat${lista.length===1?'o':'i'}</p>
+    <table>
+      <thead>
+        <tr>
+          <th class="left">Candidato</th>
+          <th>Crediti</th>
+          <th>1ª Prova</th>
+          <th>2ª Prova</th>
+          <th>Orale</th>
+          <th>Totale</th>
+          <th>Bonus</th>
+          <th>Finale</th>
+        </tr>
+      </thead>
+      <tbody>${righe}</tbody>
+    </table>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html); w.document.close();
+  setTimeout(() => w.print(), 500);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
 caricaDaStorage();
 renderIndicatori();
 renderRegistro();
+renderElencoChips();
+document.getElementById('elencoTextarea').value = caricaElenco().join('\n');
+
+const ultimaSezione = localStorage.getItem('maturita_2026_ultima_sezione') || 'elenco';
+mostraSezione(ultimaSezione);
+
+setInterval(() => {
+  const sezioneVisibile = document.querySelector('.section.visible');
+  if (sezioneVisibile && sezioneVisibile.id === 'sectionFinale') renderTabellaFinale();
+}, 2000);
 </script>
 </body>
 </html>
