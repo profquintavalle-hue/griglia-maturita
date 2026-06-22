@@ -226,6 +226,8 @@
       <p style="font-size:11px;color:var(--text3);margin-top:6px;">
         Token GitHub con permesso <strong>gist</strong>. 
         <a href="https://github.com/settings/tokens/new?scopes=gist&description=GrigliaMaturita2026" target="_blank" style="color:var(--green-mid)">Crea token →</a>
+        &nbsp;·&nbsp;
+        <a href="#" onclick="reimpostaGist();return false;" style="color:var(--gold)">⚠ Reimposta Gist (usa se i dispositivi non si sincronizzano)</a>
       </p>
     </div>
   </div>
@@ -444,6 +446,12 @@ async function sincronizzaConGist(primaVolta) {
 }
 
 async function sincronizzaOra() { await sincronizzaConGist(false); }
+
+function reimpostaGist() {
+  if (!confirm('Questo dispositivo cercherà il Gist comune e caricherà quei dati. Continuare?')) return;
+  localStorage.removeItem(STORAGE_GIST_ID);
+  caricaDaCloud();
+}
 
 // ── CARICA DAL CLOUD all'avvio ───────────────────────────────────
 async function caricaDaCloud() {
