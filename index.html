@@ -266,8 +266,6 @@
         <p>Allegato A &mdash; Esame di Stato 2026 &mdash; Max 20 punti</p>
       </div>
       <div class="header-actions no-print">
-        <button class="btn" onclick="esportaJSON()">⬇ Backup dati</button>
-        <label class="btn" style="cursor:pointer;">⬆ Ripristina<input type="file" accept=".json" onchange="importaJSON(event)" style="display:none"></label>
         <button class="btn btn-green" onclick="stampaRiepilogo()">🖨 Stampa riepilogo</button>
       </div>
     </div>
@@ -862,9 +860,16 @@ function stampaRiepilogo() {
     ${righe}
   </body></html>`;
 
-  const w = window.open('', '_blank');
-  w.document.write(html); w.document.close();
-  setTimeout(() => w.print(), 500);
+  // Uso iframe invece di window.open per compatibilità iPad Safari
+  let iframe = document.getElementById('print-iframe');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'print-iframe';
+    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;';
+    document.body.appendChild(iframe);
+  }
+  iframe.srcdoc = html;
+  iframe.onload = () => { iframe.contentWindow.focus(); iframe.contentWindow.print(); };
 }
 
 /* ============================================================
@@ -1038,9 +1043,15 @@ function stampaRiepilogoFinale() {
     </table>
   </body></html>`;
 
-  const w = window.open('', '_blank');
-  w.document.write(html); w.document.close();
-  setTimeout(() => w.print(), 500);
+  let iframe = document.getElementById('print-iframe');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'print-iframe';
+    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;';
+    document.body.appendChild(iframe);
+  }
+  iframe.srcdoc = html;
+  iframe.onload = () => { iframe.contentWindow.focus(); iframe.contentWindow.print(); };
 }
 
 /* ============================================================
