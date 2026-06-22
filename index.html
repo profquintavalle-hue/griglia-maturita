@@ -152,11 +152,26 @@
   tbody tr:hover { background: var(--bg2); }
 
   input.cell-input {
-    width: 56px; font-size: 13px; font-weight: 500; text-align: center;
-    padding: 5px 4px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm);
+    width: 46px; font-size: 13px; font-weight: 500; text-align: center;
+    padding: 5px 4px; border: 0.5px solid var(--border2); border-radius: 0;
+    border-left: none; border-right: none;
     background: var(--bg2); color: var(--text); font-family: inherit;
+    -moz-appearance: textfield;
   }
-  input.cell-input:focus { outline: 2px solid var(--green-mid); outline-offset: 1px; }
+  input.cell-input::-webkit-outer-spin-button,
+  input.cell-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input.cell-input:focus { outline: 2px solid var(--green-mid); outline-offset: 1px; z-index: 1; position: relative; }
+  .cell-stepper { display: inline-flex; align-items: center; }
+  .step-btn {
+    width: 30px; height: 32px; font-size: 17px; font-weight: 600;
+    background: var(--bg3); border: 0.5px solid var(--border2);
+    color: var(--text); cursor: pointer; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    touch-action: manipulation; user-select: none; font-family: inherit;
+  }
+  .step-btn:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+  .step-btn:last-child  { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .step-btn:active { background: var(--green-light); color: var(--green-text); }
 
   .col-orale-val { font-weight: 700; color: var(--green-mid); }
   .col-orale-val.empty { color: var(--text3); font-weight: 400; font-size: 11px; }
@@ -725,12 +740,48 @@ function calcolaTotaleFinale(extra) {
   return { crediti, p1, p2 };
 }
 
+function stepCellFinale(btn, campo, nome, delta, min, max) {
+  const input = btn.parentElement.querySelector('input');
+  const cur = parseFloat(input.value) || 0;
+  const decimals = Math.abs(delta) < 1 ? 1 : 0;
+  let newVal = Math.round((cur + delta) * Math.pow(10, decimals + 1)) / Math.pow(10, decimals + 1);
+  newVal = Math.max(min, Math.min(max, newVal));
+  input.value = newVal;
+  aggiornaCampoFinale(nome, campo, newVal);
+}
+
 function aggiornaCampoFinale(nome, campo, valore) {
   const dati = caricaFinaleDati();
   if (!dati[nome]) dati[nome] = { crediti: '', prova1: '', prova2: '', bonus: '', lode: false };
   dati[nome][campo] = valore;
   salvaFinaleDati(dati);
-  renderTabellaFinale();
+  // Aggiorna solo le celle calcolate della riga, senza re-renderizzare tutto
+  aggiornaCelleRiga(nome, dati[nome]);
+}
+
+function aggiornaCelleRiga(nome, extra) {
+  caricaDaStorage();
+  const orale = getVotoOrale(nome);
+  const crediti = parseFloat(extra.crediti);
+  const p1 = parseFloat(extra.prova1);
+  const p2 = parseFloat(extra.prova2);
+  const valoriPresenti = [crediti, p1, p2, orale].filter(v => v !== null && !isNaN(v));
+  const totale = valoriPresenti.length > 0 ? Math.round(valoriPresenti.reduce((a,b) => a+b, 0) * 100) / 100 : null;
+  const bonus = parseFloat(extra.bonus) || 0;
+  let finale = totale !== null ? totale + bonus : null;
+  if (finale !== null && finale > 100) finale = 100;
+  const isCento = finale === 100;
+  // Trova la riga tramite data-nome
+  const tr = document.querySelector(`tr[data-nome="${nome.replace(/"/g, '&quot;')}"]`);
+  if (!tr) { renderTabellaFinale(); return; }
+  tr.className = isCento ? 'lode-row-cento' : '';
+  const totaleEl = tr.querySelector('.col-totale-val');
+  const finaleEl = tr.querySelector('.col-finale-val');
+  if (totaleEl) totaleEl.textContent = totale !== null ? totale : '—';
+  if (finaleEl) {
+    finaleEl.textContent = finale !== null ? finale + (extra.lode && isCento ? ' L' : '') : '—';
+    finaleEl.className = 'col-finale-val' + (isCento ? ' cento' : '');
+  }
 }
 
 function renderTabellaFinale() {
@@ -760,15 +811,16 @@ function renderTabellaFinale() {
     if (finale !== null && finale > 100) finale = 100;
     const isCento = finale === 100;
 
-    return `<tr class="${isCento ? 'lode-row-cento' : ''}">
+    const nE = nome.replace(/'/g, "\\'");
+    return `<tr class="${isCento ? 'lode-row-cento' : ''}" data-nome="${nome.replace(/"/g, '&quot;')}">
       <td class="col-nome">${nome}</td>
-      <td><input class="cell-input" type="number" min="0" max="40" value="${extra.crediti}" placeholder="—" oninput="aggiornaCampoFinale('${nome.replace(/'/g, "\\'")}', 'crediti', this.value)"></td>
-      <td><input class="cell-input" type="number" min="0" max="20" value="${extra.prova1}" placeholder="—" oninput="aggiornaCampoFinale('${nome.replace(/'/g, "\\'")}', 'prova1', this.value)"></td>
-      <td><input class="cell-input" type="number" min="0" max="20" value="${extra.prova2}" placeholder="—" oninput="aggiornaCampoFinale('${nome.replace(/'/g, "\\'")}', 'prova2', this.value)"></td>
+      <td><div class="cell-stepper"><button class="step-btn" onclick="stepCellFinale(this,'crediti','${nE}',-1,0,40)">−</button><input class="cell-input" type="number" inputmode="numeric" min="0" max="40" value="${extra.crediti}" placeholder="—" onchange="aggiornaCampoFinale('${nE}','crediti',this.value)"><button class="step-btn" onclick="stepCellFinale(this,'crediti','${nE}',+1,0,40)">+</button></div></td>
+      <td><div class="cell-stepper"><button class="step-btn" onclick="stepCellFinale(this,'prova1','${nE}',-1,0,20)">−</button><input class="cell-input" type="number" inputmode="numeric" min="0" max="20" value="${extra.prova1}" placeholder="—" onchange="aggiornaCampoFinale('${nE}','prova1',this.value)"><button class="step-btn" onclick="stepCellFinale(this,'prova1','${nE}',+1,0,20)">+</button></div></td>
+      <td><div class="cell-stepper"><button class="step-btn" onclick="stepCellFinale(this,'prova2','${nE}',-1,0,20)">−</button><input class="cell-input" type="number" inputmode="numeric" min="0" max="20" value="${extra.prova2}" placeholder="—" onchange="aggiornaCampoFinale('${nE}','prova2',this.value)"><button class="step-btn" onclick="stepCellFinale(this,'prova2','${nE}',+1,0,20)">+</button></div></td>
       <td><span class="col-orale-val ${orale === null ? 'empty' : ''}">${orale !== null ? orale : 'non valutato'}</span></td>
       <td><span class="col-totale-val">${totale !== null ? totale : '—'}</span></td>
-      <td><input class="cell-input" type="number" min="0" max="5" step="0.5" value="${extra.bonus}" placeholder="0" oninput="aggiornaCampoFinale('${nome.replace(/'/g, "\\'")}', 'bonus', this.value)"></td>
-      <td><input type="checkbox" class="lode-checkbox" ${extra.lode ? 'checked' : ''} onchange="aggiornaCampoFinale('${nome.replace(/'/g, "\\'")}', 'lode', this.checked)"></td>
+      <td><div class="cell-stepper"><button class="step-btn" onclick="stepCellFinale(this,'bonus','${nE}',-0.5,0,5)">−</button><input class="cell-input" type="number" inputmode="decimal" min="0" max="5" step="0.5" value="${extra.bonus}" placeholder="0" onchange="aggiornaCampoFinale('${nE}','bonus',this.value)"><button class="step-btn" onclick="stepCellFinale(this,'bonus','${nE}',+0.5,0,5)">+</button></div></td>
+      <td><input type="checkbox" class="lode-checkbox" ${extra.lode ? 'checked' : ''} onchange="aggiornaCampoFinale('${nE}','lode',this.checked)"></td>
       <td><span class="col-finale-val ${isCento ? 'cento' : ''}">${finale !== null ? finale + (extra.lode && isCento ? ' L' : '') : '—'}</span></td>
     </tr>`;
   }).join('');
