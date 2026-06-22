@@ -767,7 +767,9 @@ function salvaCandidato() {
   }
   salvaSuStorage(); renderRegistro();
   sincronizzaConGist();
-}(idx) {
+}
+
+function caricaCandidato(idx) {
   const c = candidati[idx];
   candidatoAttivo = idx;
   selezioni = JSON.parse(JSON.stringify(c.selezioni));
