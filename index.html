@@ -190,10 +190,42 @@
     .page { max-width: 100%; }
     input.cell-input { border: none; background: transparent; }
   }
+
+  /* SYNC GIST */
+  .sync-bar { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .sync-status { font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+  .sync-dot.ok  { background: #22c55e; }
+  .sync-dot.err { background: #ef4444; }
+  .sync-dot.spin { background: var(--gold); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .sync-token-wrap { display: flex; gap: 6px; align-items: center; flex:1; min-width:200px; }
+  .sync-token-wrap input { flex:1; font-size:12px; padding:5px 8px; border:0.5px solid var(--border2); border-radius:var(--radius-sm); background:var(--bg2); color:var(--text); font-family:inherit; }
+  .sync-panel-toggle { font-size:12px; color:var(--text3); cursor:pointer; text-decoration:underline; white-space:nowrap; background:none; border:none; font-family:inherit; }
 </style>
 </head>
 <body>
 <div class="page">
+
+  <!-- SYNC BAR -->
+  <div class="sync-bar no-print" id="syncBar">
+    <div class="sync-status">
+      <div class="sync-dot" id="syncDot"></div>
+      <span id="syncMsg">Sincronizzazione non configurata</span>
+    </div>
+    <button class="sync-panel-toggle" onclick="toggleSyncPanel()">⚙ Configura</button>
+    <div id="syncPanel" style="display:none;width:100%;margin-top:8px;">
+      <div class="sync-token-wrap">
+        <input type="password" id="gistToken" placeholder="Token GitHub (ghp_...)" autocomplete="off" />
+        <button class="btn btn-green" onclick="salvaToken()">Salva token</button>
+        <button class="btn" onclick="sincronizzaOra()" id="syncNowBtn" style="display:none">↑ Sync ora</button>
+      </div>
+      <p style="font-size:11px;color:var(--text3);margin-top:6px;">
+        Token GitHub con permesso <strong>gist</strong>. 
+        <a href="https://github.com/settings/tokens/new?scopes=gist&description=GrigliaMaturita2026" target="_blank" style="color:var(--green-mid)">Crea token →</a>
+      </p>
+    </div>
+  </div>
 
   <div class="top-nav no-print">
     <button class="nav-btn" id="navElenco" onclick="mostraSezione('elenco')">📋 Elenco candidati</button>
@@ -320,6 +352,121 @@
 const STORAGE_ELENCO = 'maturita_2026_elenco';
 const STORAGE_ORALE   = 'griglia_maturita_2026';
 const STORAGE_FINALE  = 'griglia_finale_2026';
+const STORAGE_TOKEN   = 'gist_token_2026';
+const STORAGE_GIST_ID = 'gist_id_2026';
+const GIST_FILENAME   = 'griglia_maturita_2026.json';
+
+// ── SYNC STATUS UI ──────────────────────────────────────────────
+function setSyncStatus(stato, msg) {
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncMsg');
+  if (!dot) return;
+  dot.className = 'sync-dot ' + (stato || '');
+  txt.textContent = msg;
+}
+
+function toggleSyncPanel() {
+  const p = document.getElementById('syncPanel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+function salvaToken() {
+  const t = document.getElementById('gistToken').value.trim();
+  if (!t) { alert('Inserisci il token GitHub.'); return; }
+  localStorage.setItem(STORAGE_TOKEN, t);
+  document.getElementById('syncPanel').style.display = 'none';
+  document.getElementById('syncNowBtn').style.display = 'inline-flex';
+  setSyncStatus('spin', 'Prima sincronizzazione in corso…');
+  sincronizzaConGist(true);
+}
+
+// ── GIST API ────────────────────────────────────────────────────
+async function sincronizzaConGist(primaVolta) {
+  const token = localStorage.getItem(STORAGE_TOKEN);
+  if (!token) return;
+  setSyncStatus('spin', 'Salvataggio in cloud…');
+  const backup = {
+    _versione: 2, _data: new Date().toISOString(),
+    elenco:  JSON.parse(localStorage.getItem(STORAGE_ELENCO)  || '[]'),
+    orale:   JSON.parse(localStorage.getItem(STORAGE_ORALE)   || '[]'),
+    finale:  JSON.parse(localStorage.getItem(STORAGE_FINALE)  || '{}')
+  };
+  const contenuto = JSON.stringify(backup, null, 2);
+  const gistId = localStorage.getItem(STORAGE_GIST_ID);
+  try {
+    let res;
+    if (gistId) {
+      res = await fetch(`https://api.github.com/gists/${gistId}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: { [GIST_FILENAME]: { content: contenuto } } })
+      });
+    } else {
+      res = await fetch('https://api.github.com/gists', {
+        method: 'POST',
+        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: 'Griglia Maturità 2026 — backup automatico',
+          public: false,
+          files: { [GIST_FILENAME]: { content: contenuto } }
+        })
+      });
+    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!gistId) localStorage.setItem(STORAGE_GIST_ID, data.id);
+    const ora = new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'});
+    setSyncStatus('ok', `Cloud aggiornato alle ${ora}`);
+  } catch(e) {
+    setSyncStatus('err', 'Errore sync — dati locali al sicuro');
+    console.error('Gist sync error:', e);
+  }
+}
+
+async function sincronizzaOra() { await sincronizzaConGist(false); }
+
+// ── CARICA DAL CLOUD all'avvio ───────────────────────────────────
+async function caricaDaCloud() {
+  const token  = localStorage.getItem(STORAGE_TOKEN);
+  const gistId = localStorage.getItem(STORAGE_GIST_ID);
+  if (!token || !gistId) {
+    if (token) { document.getElementById('syncNowBtn').style.display = 'inline-flex'; }
+    return;
+  }
+  document.getElementById('syncNowBtn').style.display = 'inline-flex';
+  setSyncStatus('spin', 'Controllo cloud…');
+  try {
+    const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+      headers: { 'Authorization': `token ${token}` }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const raw  = data.files?.[GIST_FILENAME]?.content;
+    if (!raw) throw new Error('File non trovato nel gist');
+    const backup = JSON.parse(raw);
+    // Confronta timestamp: usa il più recente
+    const tsCloud = new Date(backup._data || 0).getTime();
+    const oraleLocale = JSON.parse(localStorage.getItem(STORAGE_ORALE) || '[]');
+    const tsLocale = oraleLocale.length ? Math.max(...oraleLocale.map(c => c.ts || 0)) : 0;
+    if (tsCloud > tsLocale || oraleLocale.length === 0) {
+      if (backup.elenco) localStorage.setItem(STORAGE_ELENCO, JSON.stringify(backup.elenco));
+      if (backup.orale)  localStorage.setItem(STORAGE_ORALE,  JSON.stringify(backup.orale));
+      if (backup.finale) localStorage.setItem(STORAGE_FINALE, JSON.stringify(backup.finale));
+      // Ricarica UI
+      caricaDaStorage && caricaDaStorage();
+      renderRegistro && renderRegistro();
+      renderTabellaFinale && renderTabellaFinale();
+      const ora = new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'});
+      setSyncStatus('ok', `Dati cloud caricati alle ${ora}`);
+    } else {
+      setSyncStatus('ok', `Cloud sincronizzato`);
+    }
+  } catch(e) {
+    setSyncStatus('err', 'Impossibile raggiungere il cloud — uso dati locali');
+    console.error('Gist load error:', e);
+  }
+}
+
 
 /* ============================================================
    NAVIGAZIONE TRA SEZIONI
@@ -356,6 +503,7 @@ function salvaElenco() {
   renderElencoChips();
   popolaSelectCandidati();
   renderTabellaFinale();
+  sincronizzaConGist();
 }
 
 function svuotaElenco() {
@@ -618,9 +766,8 @@ function salvaCandidato() {
     else { candidati.push(dati); candidatoAttivo = candidati.length - 1; }
   }
   salvaSuStorage(); renderRegistro();
-}
-
-function caricaCandidato(idx) {
+  sincronizzaConGist();
+}(idx) {
   const c = candidati[idx];
   candidatoAttivo = idx;
   selezioni = JSON.parse(JSON.stringify(c.selezioni));
@@ -755,8 +902,8 @@ function aggiornaCampoFinale(nome, campo, valore) {
   if (!dati[nome]) dati[nome] = { crediti: '', prova1: '', prova2: '', bonus: '', lode: false };
   dati[nome][campo] = valore;
   salvaFinaleDati(dati);
-  // Aggiorna solo le celle calcolate della riga, senza re-renderizzare tutto
   aggiornaCelleRiga(nome, dati[nome]);
+  sincronizzaConGist();
 }
 
 function aggiornaCelleRiga(nome, extra) {
@@ -905,6 +1052,18 @@ document.getElementById('elencoTextarea').value = caricaElenco().join('\n');
 
 const ultimaSezione = localStorage.getItem('maturita_2026_ultima_sezione') || 'elenco';
 mostraSezione(ultimaSezione);
+
+// Inizializza UI sync
+(function() {
+  const t = localStorage.getItem(STORAGE_TOKEN);
+  if (t) {
+    document.getElementById('gistToken').value = t;
+    document.getElementById('syncNowBtn').style.display = 'inline-flex';
+    caricaDaCloud();
+  } else {
+    setSyncStatus('', 'Sync cloud non configurato — tocca ⚙ Configura');
+  }
+})();
 
 setInterval(() => {
   const sezioneVisibile = document.querySelector('.section.visible');
