@@ -382,6 +382,40 @@ function salvaToken() {
 }
 
 // ── GIST API ────────────────────────────────────────────────────
+// Trova il Gist esistente o ne crea uno nuovo — sempre lo stesso su tutti i dispositivi
+async function trovaOCreaGist(token) {
+  let gistId = localStorage.getItem(STORAGE_GIST_ID);
+  if (gistId) return gistId;
+  // Cerca tra i Gist esistenti quello con il nostro filename
+  try {
+    const res = await fetch('https://api.github.com/gists?per_page=100', {
+      headers: { 'Authorization': `token ${token}` }
+    });
+    if (res.ok) {
+      const lista = await res.json();
+      const trovato = lista.find(g => g.files && g.files[GIST_FILENAME]);
+      if (trovato) {
+        localStorage.setItem(STORAGE_GIST_ID, trovato.id);
+        return trovato.id;
+      }
+    }
+  } catch(e) {}
+  // Non trovato: crea nuovo
+  const res = await fetch('https://api.github.com/gists', {
+    method: 'POST',
+    headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      description: 'Griglia Maturità 2026 — backup automatico',
+      public: false,
+      files: { [GIST_FILENAME]: { content: '{}' } }
+    })
+  });
+  if (!res.ok) throw new Error('Creazione Gist fallita');
+  const data = await res.json();
+  localStorage.setItem(STORAGE_GIST_ID, data.id);
+  return data.id;
+}
+
 async function sincronizzaConGist(primaVolta) {
   const token = localStorage.getItem(STORAGE_TOKEN);
   if (!token) return;
@@ -393,29 +427,14 @@ async function sincronizzaConGist(primaVolta) {
     finale:  JSON.parse(localStorage.getItem(STORAGE_FINALE)  || '{}')
   };
   const contenuto = JSON.stringify(backup, null, 2);
-  const gistId = localStorage.getItem(STORAGE_GIST_ID);
   try {
-    let res;
-    if (gistId) {
-      res = await fetch(`https://api.github.com/gists/${gistId}`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ files: { [GIST_FILENAME]: { content: contenuto } } })
-      });
-    } else {
-      res = await fetch('https://api.github.com/gists', {
-        method: 'POST',
-        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          description: 'Griglia Maturità 2026 — backup automatico',
-          public: false,
-          files: { [GIST_FILENAME]: { content: contenuto } }
-        })
-      });
-    }
+    const gistId = await trovaOCreaGist(token);
+    const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files: { [GIST_FILENAME]: { content: contenuto } } })
+    });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (!gistId) localStorage.setItem(STORAGE_GIST_ID, data.id);
     const ora = new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'});
     setSyncStatus('ok', `Cloud aggiornato alle ${ora}`);
   } catch(e) {
@@ -437,6 +456,7 @@ async function caricaDaCloud() {
   document.getElementById('syncNowBtn').style.display = 'inline-flex';
   setSyncStatus('spin', 'Controllo cloud…');
   try {
+    const gistId = await trovaOCreaGist(token);
     const res = await fetch(`https://api.github.com/gists/${gistId}`, {
       headers: { 'Authorization': `token ${token}` }
     });
@@ -825,13 +845,19 @@ function _stampaDaHTML(htmlBody, titolo) {
   overlay.style.display = 'block';
   const prevTitle = document.title;
   document.title = titolo;
-  window.print();
-  document.title = prevTitle;
-  overlay.style.display = 'none';
-  overlay.innerHTML = '';
+  function cleanup() {
+    overlay.style.display = 'none';
+    overlay.innerHTML = '';
+    document.title = prevTitle;
+    window.removeEventListener('afterprint', cleanup);
+  }
+  window.addEventListener('afterprint', cleanup);
+  setTimeout(() => window.print(), 100);
 }
 
 function stampaRiepilogo() {
+  try {
+  alert('Avvio stampa... candidati: ' + candidati.length);
   if (!candidati.length) { alert('Nessun candidato valutato da stampare.'); return; }
   const nomi_ind = [
     'Acquisizione dei contenuti e dei metodi',
@@ -875,6 +901,7 @@ function stampaRiepilogo() {
     <p>Allegato A — Esame di Stato 2026 — ${candidati.length} candidat${candidati.length===1?'o':'i'}</p>
     ${righe}`;
   _stampaDaHTML(htmlBody, 'Riepilogo colloqui — Maturità 2026');
+  } catch(err) { alert('Errore stampa: ' + err.message); }
 }
 
 /* ============================================================
