@@ -423,15 +423,33 @@ function caricaDaStorage() {
 function salvaSuStorage() { localStorage.setItem(STORAGE_ORALE, JSON.stringify(candidati)); }
 
 function esportaJSON() {
-  const blob = new Blob([JSON.stringify(candidati, null, 2)], { type: 'application/json' });
+  const backup = {
+    _versione: 2,
+    _data: new Date().toISOString(),
+    elenco: JSON.parse(localStorage.getItem(STORAGE_ELENCO) || '[]'),
+    orale: candidati,
+    finale: JSON.parse(localStorage.getItem(STORAGE_FINALE) || '{}')
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = 'griglia_maturita_2026.json'; a.click();
+  a.download = 'griglia_maturita_2026_backup.json'; a.click();
 }
 function importaJSON(e) {
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
-    try { candidati = JSON.parse(ev.target.result); salvaSuStorage(); renderRegistro(); alert('Dati importati: ' + candidati.length + ' candidati.'); }
+    try {
+      const raw = JSON.parse(ev.target.result);
+      if (raw._versione === 2) {
+        if (raw.elenco) { salvaElencoStorage(raw.elenco); renderElenco && renderElenco(); }
+        if (raw.orale)  { candidati = raw.orale; salvaSuStorage(); renderRegistro(); }
+        if (raw.finale) { salvaFinaleDati(raw.finale); }
+        alert('Dati ripristinati: ' + (raw.elenco||[]).length + ' candidati in elenco, ' + (raw.orale||[]).length + ' colloqui salvati.');
+      } else {
+        candidati = raw; salvaSuStorage(); renderRegistro();
+        alert('Dati importati (formato vecchio): ' + candidati.length + ' colloqui.');
+      }
+    }
     catch(err) { alert('Errore nella lettura del file.'); }
   };
   reader.readAsText(file);
