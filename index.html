@@ -871,8 +871,9 @@ function stampaRiepilogo() {
       const sel = c.selezioni[ind.id];
       if (!sel) return `<tr><td>${nomi_ind[j]}</td><td>—</td><td>—</td><td>—</td></tr>`;
       const l = ind.livelli[sel.livIndex];
+      if (!l) return `<tr><td>${nomi_ind[j]}</td><td>—</td><td>—</td><td>—</td></tr>`;
       const range = l.min === l.max ? l.min.toString() : l.min + '–' + l.max;
-      const v = sel.valore % 1 === 0 ? sel.valore : sel.valore.toFixed(2);
+      const v = (sel.valore ?? 0) % 1 === 0 ? (sel.valore ?? 0) : (sel.valore ?? 0).toFixed(2);
       return `<tr><td>${nomi_ind[j]}</td><td style="text-align:center">Livello ${l.romano}<br><small>${range}</small></td><td style="text-align:center;font-weight:700;color:#0F6E56">${v}</td><td style="font-size:11px;color:#555">${l.desc}</td></tr>`;
     }).join('');
     return `<div style="page-break-inside:avoid;margin-bottom:32px;border:1px solid #ccc;border-radius:8px;padding:18px 22px;">
