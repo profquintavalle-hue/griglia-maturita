@@ -184,11 +184,14 @@
 
   .empty-row { text-align: center; padding: 24px; color: var(--text3); font-size: 13px; }
 
+  #print-overlay { display: none; }
   @media print {
     body { background: white; padding: 0; }
     .no-print { display: none !important; }
     .page { max-width: 100%; }
     input.cell-input { border: none; background: transparent; }
+    #print-overlay { display: block !important; position: fixed; top:0; left:0; width:100%; background:white; z-index:9999; }
+    body > *:not(#print-overlay) { display: none !important; }
   }
 
   /* SYNC GIST */
@@ -811,6 +814,23 @@ function renderRegistro() {
   el.appendChild(list);
 }
 
+function _stampaDaHTML(htmlBody, titolo) {
+  let overlay = document.getElementById('print-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'print-overlay';
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = '<style>body,#print-overlay{font-family:-apple-system,sans-serif;padding:24px;color:#1a1917}h1{font-size:18px;font-weight:600;margin-bottom:4px}p{font-size:12px;color:#888;margin-bottom:28px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:6px 8px;border:1px solid #ddd;vertical-align:top}th{background:#f5f4f0;text-align:left}</style>' + htmlBody;
+  overlay.style.display = 'block';
+  const prevTitle = document.title;
+  document.title = titolo;
+  window.print();
+  document.title = prevTitle;
+  overlay.style.display = 'none';
+  overlay.innerHTML = '';
+}
+
 function stampaRiepilogo() {
   if (!candidati.length) { alert('Nessun candidato valutato da stampare.'); return; }
   const nomi_ind = [
@@ -851,25 +871,10 @@ function stampaRiepilogo() {
     </div>`;
   }).join('');
 
-  const html = `<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8">
-    <title>Riepilogo colloqui — Maturità 2026</title>
-    <style>body{font-family:-apple-system,sans-serif;padding:24px;max-width:960px;margin:0 auto;color:#1a1917}h1{font-size:18px;font-weight:600;margin-bottom:4px}p{font-size:12px;color:#888;margin-bottom:28px}@media print{body{padding:0}}</style>
-  </head><body>
-    <h1>Riepilogo valutazioni — Colloquio orale</h1>
+  const htmlBody = `<h1>Riepilogo valutazioni — Colloquio orale</h1>
     <p>Allegato A — Esame di Stato 2026 — ${candidati.length} candidat${candidati.length===1?'o':'i'}</p>
-    ${righe}
-  </body></html>`;
-
-  // Uso iframe invece di window.open per compatibilità iPad Safari
-  let iframe = document.getElementById('print-iframe');
-  if (!iframe) {
-    iframe = document.createElement('iframe');
-    iframe.id = 'print-iframe';
-    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;';
-    document.body.appendChild(iframe);
-  }
-  iframe.srcdoc = html;
-  iframe.onload = () => { iframe.contentWindow.focus(); iframe.contentWindow.print(); };
+    ${righe}`;
+  _stampaDaHTML(htmlBody, 'Riepilogo colloqui — Maturità 2026');
 }
 
 /* ============================================================
@@ -1043,15 +1048,7 @@ function stampaRiepilogoFinale() {
     </table>
   </body></html>`;
 
-  let iframe = document.getElementById('print-iframe');
-  if (!iframe) {
-    iframe = document.createElement('iframe');
-    iframe.id = 'print-iframe';
-    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;';
-    document.body.appendChild(iframe);
-  }
-  iframe.srcdoc = html;
-  iframe.onload = () => { iframe.contentWindow.focus(); iframe.contentWindow.print(); };
+  _stampaDaHTML(html, 'Riepilogo finale — Maturità 2026');
 }
 
 /* ============================================================
