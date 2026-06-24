@@ -190,7 +190,7 @@
     .no-print { display: none !important; }
     .page { max-width: 100%; }
     input.cell-input { border: none; background: transparent; }
-    #print-overlay { display: block !important; position: fixed; top:0; left:0; width:100%; background:white; z-index:9999; }
+    #print-overlay { display: block !important; position: static !important; width:100%; background:white; }
     body > *:not(#print-overlay) { display: none !important; }
   }
 
@@ -319,6 +319,7 @@
         <p>Crediti + Prove scritte + Colloquio orale = Punteggio totale (+ Bonus e Lode)</p>
       </div>
       <div class="header-actions no-print">
+        <button class="btn btn-green" onclick="salvaEsincrona()" style="font-size:15px;padding:10px 20px;">💾 Salva tutto</button>
         <button class="btn btn-green" onclick="stampaRiepilogoFinale()">🖨 Stampa riepilogo</button>
         <button class="btn" onclick="window.print()">🖨 Stampa tabella</button>
       </div>
@@ -446,6 +447,12 @@ async function sincronizzaConGist(primaVolta) {
 }
 
 async function sincronizzaOra() { await sincronizzaConGist(false); }
+
+async function salvaEsincrona() {
+  setSyncStatus('spin', 'Salvataggio in corso…');
+  await sincronizzaConGist(false);
+  alert('Dati salvati nel cloud ✓');
+}
 
 function reimpostaGist() {
   if (!confirm('Questo dispositivo cercherà il Gist comune e caricherà quei dati. Continuare?')) return;
@@ -865,7 +872,6 @@ function _stampaDaHTML(htmlBody, titolo) {
 
 function stampaRiepilogo() {
   try {
-  alert('Avvio stampa... candidati: ' + candidati.length);
   if (!candidati.length) { alert('Nessun candidato valutato da stampare.'); return; }
   const nomi_ind = [
     'Acquisizione dei contenuti e dei metodi',
