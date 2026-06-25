@@ -380,8 +380,8 @@ function salvaToken() {
   localStorage.setItem(STORAGE_TOKEN, t);
   document.getElementById('syncPanel').style.display = 'none';
   document.getElementById('syncNowBtn').style.display = 'inline-flex';
-  setSyncStatus('spin', 'Prima sincronizzazione in corso…');
-  sincronizzaConGist(true);
+  setSyncStatus('spin', 'Carico dati dal cloud…');
+  caricaDaCloud(); // Su dispositivo nuovo: scarica dal cloud, non caricare dati locali
 }
 
 // ── GIST API ────────────────────────────────────────────────────
