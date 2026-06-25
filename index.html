@@ -454,10 +454,50 @@ async function salvaEsincrona() {
   alert('Dati salvati nel cloud ✓');
 }
 
-function reimpostaGist() {
-  if (!confirm('Questo dispositivo cercherà il Gist comune e caricherà quei dati. Continuare?')) return;
+async function reimpostaGist() {
+  const token = localStorage.getItem(STORAGE_TOKEN);
+  if (!token) { alert('Prima inserisci il token.'); return; }
+  if (!confirm('Cercherò tutti i tuoi Gist e caricherò quello con più dati. I dati locali verranno sostituiti. Continuare?')) return;
   localStorage.removeItem(STORAGE_GIST_ID);
-  caricaDaCloud();
+  setSyncStatus('spin', 'Cerco dati nel cloud…');
+  try {
+    // Carica TUTTI i Gist e trova quello con più candidati
+    const res = await fetch('https://api.github.com/gists?per_page=100', {
+      headers: { 'Authorization': `token ${token}` }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const lista = await res.json();
+    const candidati_trovati = [];
+    for (const g of lista) {
+      if (g.files && g.files[GIST_FILENAME]) {
+        const r2 = await fetch(`https://api.github.com/gists/${g.id}`, {
+          headers: { 'Authorization': `token ${token}` }
+        });
+        if (!r2.ok) continue;
+        const d2 = await r2.json();
+        const raw = d2.files?.[GIST_FILENAME]?.content;
+        if (!raw) continue;
+        try {
+          const backup = JSON.parse(raw);
+          candidati_trovati.push({ id: g.id, backup, n: (backup.orale||[]).length });
+        } catch(e) {}
+      }
+    }
+    if (!candidati_trovati.length) { setSyncStatus('err', 'Nessun Gist trovato'); return; }
+    // Usa quello con più candidati
+    candidati_trovati.sort((a,b) => b.n - a.n);
+    const migliore = candidati_trovati[0];
+    if (!confirm(`Trovato Gist con ${migliore.n} candidati. Carico questi dati?`)) return;
+    localStorage.setItem(STORAGE_GIST_ID, migliore.id);
+    const backup = migliore.backup;
+    if (backup.elenco) localStorage.setItem(STORAGE_ELENCO, JSON.stringify(backup.elenco));
+    if (backup.orale)  { localStorage.setItem(STORAGE_ORALE, JSON.stringify(backup.orale)); caricaDaStorage && caricaDaStorage(); renderRegistro && renderRegistro(); }
+    if (backup.finale) { localStorage.setItem(STORAGE_FINALE, JSON.stringify(backup.finale)); renderTabellaFinale && renderTabellaFinale(); }
+    const ora = new Date().toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'});
+    setSyncStatus('ok', `Dati cloud caricati alle ${ora} (${migliore.n} candidati)`);
+  } catch(e) {
+    setSyncStatus('err', 'Errore: ' + e.message);
+  }
 }
 
 // ── CARICA DAL CLOUD all'avvio ───────────────────────────────────
