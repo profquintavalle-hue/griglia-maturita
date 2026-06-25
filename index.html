@@ -462,12 +462,8 @@ function reimpostaGist() {
 
 // ── CARICA DAL CLOUD all'avvio ───────────────────────────────────
 async function caricaDaCloud() {
-  const token  = localStorage.getItem(STORAGE_TOKEN);
-  const gistId = localStorage.getItem(STORAGE_GIST_ID);
-  if (!token || !gistId) {
-    if (token) { document.getElementById('syncNowBtn').style.display = 'inline-flex'; }
-    return;
-  }
+  const token = localStorage.getItem(STORAGE_TOKEN);
+  if (!token) return;
   document.getElementById('syncNowBtn').style.display = 'inline-flex';
   setSyncStatus('spin', 'Controllo cloud…');
   try {
