@@ -761,9 +761,13 @@ function selezionaCandidatoDaTendina() {
     caricaCandidato(idx);
     document.getElementById('nomeSelect').value = nome;
   } else {
+    // Candidato nuovo, non ancora valutato — azzera e sblocca
     selezioni = {}; candidatoAttivo = null;
     document.getElementById('punteggioFinal').value = '';
     document.getElementById('notaInput').value = '';
+    impostaBlocco(false);
+    const box = document.getElementById('promemoriaBox');
+    if (box) box.style.display = 'none';
     aggiornaSelezioni();
     renderRegistro();
   }
