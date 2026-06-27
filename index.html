@@ -178,6 +178,12 @@
   .col-totale-val { font-weight: 700; font-size: 14px; }
   .col-finale-val { font-weight: 800; font-size: 16px; color: var(--green-mid); }
   .col-finale-val.cento { color: var(--gold); }
+  .lock-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 4px; opacity: 0.5; touch-action: manipulation; }
+  .lock-btn:hover { opacity: 1; }
+  tr.riga-bloccata td { background: #f0faf6 !important; }
+  tr.riga-bloccata .cell-stepper button { pointer-events: none; opacity: 0.3; }
+  tr.riga-bloccata input.cell-input { pointer-events: none; background: transparent; border-color: transparent; }
+  tr.riga-bloccata .lode-checkbox { pointer-events: none; }
 
   .lode-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--gold); }
   .lode-row-cento { background: var(--gold-light) !important; }
@@ -358,6 +364,7 @@
             <th>Bonus</th>
             <th>Lode</th>
             <th>Finale</th>
+            <th class="no-print"></th>
           </tr>
         </thead>
         <tbody id="tabellaBody"></tbody>
@@ -1069,6 +1076,23 @@ function calcolaTotaleFinale(extra) {
   return { crediti, p1, p2 };
 }
 
+function toggleBloccoFinale(nome) {
+  const dati = caricaFinaleDati();
+  if (!dati[nome]) return;
+  const eraBloccato = dati[nome].bloccato;
+  if (!eraBloccato) {
+    dati[nome].bloccato = true;
+    salvaFinaleDati(dati);
+    sincronizzaConGist();
+    renderTabellaFinale();
+  } else {
+    if (!confirm('Sbloccare la riga di ' + nome + ' per modificarla?')) return;
+    dati[nome].bloccato = false;
+    salvaFinaleDati(dati);
+    renderTabellaFinale();
+  }
+}
+
 function stepCellFinale(btn, campo, nome, delta, min, max) {
   const input = btn.parentElement.querySelector('input');
   const cur = parseFloat(input.value) || 0;
@@ -1141,7 +1165,10 @@ function renderTabellaFinale() {
     const isCento = finale === 100;
 
     const nE = nome.replace(/'/g, "\\'");
-    return `<tr class="${isCento ? 'lode-row-cento' : ''}" data-nome="${nome.replace(/"/g, '&quot;')}">
+    const bloccata = extra.bloccato ? 'riga-bloccata' : '';
+    const lockIcon = extra.bloccato ? '🔒' : '🔓';
+    const lockTitle = extra.bloccato ? 'Sblocca riga' : 'Blocca riga';
+    return `<tr class="${isCento ? 'lode-row-cento' : ''} ${bloccata}" data-nome="${nome.replace(/"/g, '&quot;')}">
       <td class="col-nome">${nome}</td>
       <td><div class="cell-stepper"><button class="step-btn" onclick="stepCellFinale(this,'crediti','${nE}',-1,0,40)">−</button><input class="cell-input" type="number" inputmode="numeric" min="0" max="40" value="${extra.crediti}" placeholder="—" onchange="aggiornaCampoFinale('${nE}','crediti',this.value)"><button class="step-btn" onclick="stepCellFinale(this,'crediti','${nE}',+1,0,40)">+</button></div></td>
       <td><div class="cell-stepper"><button class="step-btn" onclick="stepCellFinale(this,'prova1','${nE}',-1,0,20)">−</button><input class="cell-input" type="number" inputmode="numeric" min="0" max="20" value="${extra.prova1}" placeholder="—" onchange="aggiornaCampoFinale('${nE}','prova1',this.value)"><button class="step-btn" onclick="stepCellFinale(this,'prova1','${nE}',+1,0,20)">+</button></div></td>
@@ -1151,6 +1178,7 @@ function renderTabellaFinale() {
       <td><div class="cell-stepper"><button class="step-btn" onclick="stepCellFinale(this,'bonus','${nE}',-0.5,0,5)">−</button><input class="cell-input" type="number" inputmode="decimal" min="0" max="5" step="0.5" value="${extra.bonus}" placeholder="0" onchange="aggiornaCampoFinale('${nE}','bonus',this.value)"><button class="step-btn" onclick="stepCellFinale(this,'bonus','${nE}',+0.5,0,5)">+</button></div></td>
       <td><input type="checkbox" class="lode-checkbox" ${extra.lode ? 'checked' : ''} onchange="aggiornaCampoFinale('${nE}','lode',this.checked)"></td>
       <td><span class="col-finale-val ${isCento ? 'cento' : ''}">${finale !== null ? finale + (extra.lode && isCento ? ' L' : '') : '—'}</span></td>
+      <td><button class="lock-btn no-print" title="${lockTitle}" onclick="toggleBloccoFinale('${nE}')">${lockIcon}</button></td>
     </tr>`;
   }).join('');
 }
