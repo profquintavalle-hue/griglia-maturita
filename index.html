@@ -205,6 +205,10 @@
   .sync-token-wrap { display: flex; gap: 6px; align-items: center; flex:1; min-width:200px; }
   .sync-token-wrap input { flex:1; font-size:12px; padding:5px 8px; border:0.5px solid var(--border2); border-radius:var(--radius-sm); background:var(--bg2); color:var(--text); font-family:inherit; }
   .sync-panel-toggle { font-size:12px; color:var(--text3); cursor:pointer; text-decoration:underline; white-space:nowrap; background:none; border:none; font-family:inherit; }
+  @keyframes pulsaSalva { 0%,100%{box-shadow:0 0 0 0 rgba(15,110,86,0.5)} 50%{box-shadow:0 0 0 8px rgba(15,110,86,0)} }
+  .salva-pulse { animation: pulsaSalva 1s ease-in-out infinite !important; }
+  .blocco-banner { background:#fff8e1; border:1.5px solid #f59e0b; border-radius:var(--radius); padding:10px 14px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px; color:#92400e; }
+  .blocco-banner button { font-size:12px; padding:5px 12px; background:#f59e0b; color:white; border:none; border-radius:var(--radius-sm); cursor:pointer; font-family:inherit; font-weight:600; }
 </style>
 </head>
 <body>
@@ -275,12 +279,16 @@
       </div>
     </div>
 
+    <div id="blocco-banner" class="blocco-banner no-print" style="display:none">
+      ⚠️ <span id="blocco-msg">Candidato già valutato — risultati bloccati.</span>
+      <button onclick="sbloccaCandidato()">✏️ Modifica</button>
+    </div>
     <div class="candidato-section no-print">
       <label for="nomeSelect">Candidato:</label>
       <select id="nomeSelect" onchange="selezionaCandidatoDaTendina()">
         <option value="">— Seleziona dall'elenco —</option>
       </select>
-      <button class="btn btn-green" onclick="salvaCandidato()">Salva</button>
+      <button id="salvaBtnMain" class="btn btn-green" onclick="salvaCandidato()">Salva</button>
       <button class="btn" onclick="nuovoCandidato()">+ Nuovo</button>
     </div>
 
@@ -813,11 +821,14 @@ function calcolaPunteggio() {
   tot = Math.min(20, Math.max(1, Math.round(tot * 100) / 100));
   const disp = tot % 1 === 0 ? tot : tot.toFixed(2);
   el.innerHTML = disp + '<span>/ 20</span>';
+  // Pulsa il pulsante Salva quando tutti e 4 i descrittori sono selezionati
+  const salvaBtn = document.getElementById('salvaBtnMain');
+  if (salvaBtn && !salvaBtn.disabled) salvaBtn.classList.add('salva-pulse');
   return tot;
 }
 
 function nuovoCandidato(resetSelect = true) {
-  selezioni = {}; candidatoAttivo = null;
+  selezioni = {}; candidatoAttivo = null; impostaBlocco(false);
   if (resetSelect) document.getElementById('nomeSelect').value = '';
   document.getElementById('punteggioFinal').value = '';
   document.getElementById('notaInput').value = '';
@@ -839,6 +850,29 @@ function salvaCandidato() {
   }
   salvaSuStorage(); renderRegistro();
   sincronizzaConGist();
+  // Blocca il candidato dopo il salvataggio
+  impostaBlocco(true);
+  const salvaBtn = document.getElementById('salvaBtnMain');
+  if (salvaBtn) salvaBtn.classList.remove('salva-pulse');
+}
+
+let candidatoBloccato = false;
+
+function impostaBlocco(bloccato) {
+  candidatoBloccato = bloccato;
+  const banner = document.getElementById('blocco-banner');
+  const salvaBtn = document.getElementById('salvaBtnMain');
+  if (banner) banner.style.display = bloccato ? 'flex' : 'none';
+  if (salvaBtn) { salvaBtn.disabled = bloccato; salvaBtn.style.opacity = bloccato ? '0.4' : '1'; }
+  // Disabilita tutti i pulsanti livello
+  document.querySelectorAll('[id^="btn_"]').forEach(b => b.style.pointerEvents = bloccato ? 'none' : '');
+  document.querySelectorAll('.banda-btn').forEach(b => b.style.pointerEvents = bloccato ? 'none' : '');
+}
+
+function sbloccaCandidato() {
+  const nome = document.getElementById('nomeSelect').value;
+  if (!confirm('Vuoi modificare la valutazione di ' + nome + '? Fai attenzione a non sovrascrivere dati corretti.')) return;
+  impostaBlocco(false);
 }
 
 function caricaCandidato(idx) {
@@ -848,6 +882,10 @@ function caricaCandidato(idx) {
   document.getElementById('punteggioFinal').value = c.ptsAssegnato ?? '';
   document.getElementById('notaInput').value = c.nota ?? '';
   aggiornaSelezioni(); renderRegistro();
+  // Blocca automaticamente i candidati già salvati
+  impostaBlocco(true);
+  const salvaBtn = document.getElementById('salvaBtnMain');
+  if (salvaBtn) salvaBtn.classList.remove('salva-pulse');
 }
 
 function eliminaCandidato(idx, e) {
