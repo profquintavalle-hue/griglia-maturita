@@ -208,9 +208,10 @@
   @keyframes pulsaSalva { 0%,100%{box-shadow:0 0 0 0 rgba(15,110,86,0.5)} 50%{box-shadow:0 0 0 8px rgba(15,110,86,0)} }
   .salva-pulse { animation: pulsaSalva 1s ease-in-out infinite !important; }
   @keyframes fadeInDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
-  .promemoria-salva { background:#0F6E56; color:white; border-radius:var(--radius); padding:14px 20px; margin-bottom:12px; display:none; align-items:center; justify-content:space-between; gap:12px; animation: fadeInDown 0.3s ease; }
-  .promemoria-salva span { font-size:15px; font-weight:600; }
-  .promemoria-salva button { background:white; color:#0F6E56; border:none; border-radius:var(--radius-sm); padding:8px 18px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; }
+  @keyframes gloworange { 0%,100%{box-shadow:0 0 0 0 rgba(234,88,12,0.6);transform:scale(1)} 50%{box-shadow:0 0 20px 6px rgba(234,88,12,0.3);transform:scale(1.01)} }
+  .promemoria-salva { background: linear-gradient(135deg,#ea580c,#f97316); color:white; border-radius:var(--radius); padding:16px 20px; margin-bottom:12px; display:none; align-items:center; justify-content:space-between; gap:12px; animation: fadeInDown 0.3s ease, gloworange 1.2s ease-in-out infinite; font-weight:700; }
+  .promemoria-salva span { font-size:16px; letter-spacing:0.01em; }
+  .promemoria-salva button { background:white; color:#ea580c; border:none; border-radius:var(--radius-sm); padding:10px 22px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit; flex-shrink:0; }
   .blocco-banner { background:#fff8e1; border:1.5px solid #f59e0b; border-radius:var(--radius); padding:10px 14px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px; color:#92400e; }
   .blocco-banner button { font-size:12px; padding:5px 12px; background:#f59e0b; color:white; border:none; border-radius:var(--radius-sm); cursor:pointer; font-family:inherit; font-weight:600; }
 </style>
