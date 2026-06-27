@@ -207,6 +207,10 @@
   .sync-panel-toggle { font-size:12px; color:var(--text3); cursor:pointer; text-decoration:underline; white-space:nowrap; background:none; border:none; font-family:inherit; }
   @keyframes pulsaSalva { 0%,100%{box-shadow:0 0 0 0 rgba(15,110,86,0.5)} 50%{box-shadow:0 0 0 8px rgba(15,110,86,0)} }
   .salva-pulse { animation: pulsaSalva 1s ease-in-out infinite !important; }
+  @keyframes fadeInDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+  .promemoria-salva { background:#0F6E56; color:white; border-radius:var(--radius); padding:14px 20px; margin-bottom:12px; display:none; align-items:center; justify-content:space-between; gap:12px; animation: fadeInDown 0.3s ease; }
+  .promemoria-salva span { font-size:15px; font-weight:600; }
+  .promemoria-salva button { background:white; color:#0F6E56; border:none; border-radius:var(--radius-sm); padding:8px 18px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; }
   .blocco-banner { background:#fff8e1; border:1.5px solid #f59e0b; border-radius:var(--radius); padding:10px 14px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px; color:#92400e; }
   .blocco-banner button { font-size:12px; padding:5px 12px; background:#f59e0b; color:white; border:none; border-radius:var(--radius-sm); cursor:pointer; font-family:inherit; font-weight:600; }
 </style>
@@ -296,6 +300,10 @@
 
     <div class="indicatori" id="indicatoriContainer"></div>
 
+    <div class="promemoria-salva no-print" id="promemoriaBox">
+      <span>✅ Tutti i descrittori compilati — ricordati di salvare!</span>
+      <button onclick="salvaCandidato()">💾 Salva adesso</button>
+    </div>
     <div class="punteggio-section">
       <div>
         <div class="pts-proposto-label">Punteggio proposto</div>
@@ -857,14 +865,17 @@ function calcolaPunteggio() {
   tot = Math.min(20, Math.max(1, Math.round(tot * 100) / 100));
   const disp = tot % 1 === 0 ? tot : tot.toFixed(2);
   el.innerHTML = disp + '<span>/ 20</span>';
-  // Pulsa il pulsante Salva quando tutti e 4 i descrittori sono selezionati
+  // Mostra banner promemoria e pulsa pulsante Salva
   const salvaBtn = document.getElementById('salvaBtnMain');
   if (salvaBtn && !salvaBtn.disabled) salvaBtn.classList.add('salva-pulse');
+  const box = document.getElementById('promemoriaBox');
+  if (box && !candidatoBloccato) box.style.display = 'flex';
   return tot;
 }
 
 function nuovoCandidato(resetSelect = true) {
   selezioni = {}; candidatoAttivo = null; impostaBlocco(false);
+  const box = document.getElementById('promemoriaBox'); if (box) box.style.display = 'none';
   if (resetSelect) document.getElementById('nomeSelect').value = '';
   document.getElementById('punteggioFinal').value = '';
   document.getElementById('notaInput').value = '';
@@ -890,6 +901,8 @@ function salvaCandidato() {
   impostaBlocco(true);
   const salvaBtn = document.getElementById('salvaBtnMain');
   if (salvaBtn) salvaBtn.classList.remove('salva-pulse');
+  const box = document.getElementById('promemoriaBox');
+  if (box) box.style.display = 'none';
 }
 
 let candidatoBloccato = false;
