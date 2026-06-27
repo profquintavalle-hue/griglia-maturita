@@ -232,6 +232,8 @@
         <a href="https://github.com/settings/tokens/new?scopes=gist&description=GrigliaMaturita2026" target="_blank" style="color:var(--green-mid)">Crea token →</a>
         &nbsp;·&nbsp;
         <a href="#" onclick="reimpostaGist();return false;" style="color:var(--gold)">⚠ Reimposta Gist (usa se i dispositivi non si sincronizzano)</a>
+        &nbsp;·&nbsp;
+        <a href="#" onclick="resetNuovaClasse();return false;" style="color:#ef4444;font-weight:600">🗑 Nuova classe (cancella tutti i dati)</a>
       </p>
     </div>
   </div>
@@ -455,6 +457,40 @@ async function sincronizzaConGist(primaVolta) {
 }
 
 async function sincronizzaOra() { await sincronizzaConGist(false); }
+
+async function resetNuovaClasse() {
+  if (!confirm('ATTENZIONE: stai per cancellare tutti i dati della classe attuale. Prima verrà scaricato un backup automatico. Continuare?')) return;
+  if (!confirm('Conferma definitiva: tutti i dati verranno eliminati. Sei sicura?')) return;
+  // Scarica backup automatico prima di cancellare
+  const backup = {
+    _versione: 2, _data: new Date().toISOString(), _nota: 'Backup pre-reset',
+    elenco:  JSON.parse(localStorage.getItem(STORAGE_ELENCO)  || '[]'),
+    orale:   JSON.parse(localStorage.getItem(STORAGE_ORALE)   || '[]'),
+    finale:  JSON.parse(localStorage.getItem(STORAGE_FINALE)  || '{}')
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'backup_classe_precedente_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  // Aspetta un momento poi cancella tutto
+  setTimeout(() => {
+    localStorage.removeItem(STORAGE_ELENCO);
+    localStorage.removeItem(STORAGE_ORALE);
+    localStorage.removeItem(STORAGE_FINALE);
+    localStorage.removeItem(STORAGE_GIST_ID);
+    candidati = [];
+    selezioni = {};
+    candidatoAttivo = null;
+    renderElencoChips && renderElencoChips();
+    popolaSelectCandidati && popolaSelectCandidati();
+    nuovoCandidato();
+    renderRegistro();
+    renderTabellaFinale && renderTabellaFinale();
+    sincronizzaConGist();
+    alert('✅ Reset completato. Puoi ora inserire il nuovo elenco candidati.');
+  }, 800);
+}
 
 async function salvaEsincrona() {
   setSyncStatus('spin', 'Salvataggio in corso…');
